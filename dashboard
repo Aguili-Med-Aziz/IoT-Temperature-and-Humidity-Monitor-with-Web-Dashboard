@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temperature & Humidity Monitor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>Temperature and Humidity Monitor</h2>
+  <canvas id="temperatureChart" width="400" height="200"></canvas>
+  <canvas id="humidityChart" width="400" height="200"></canvas>
+
+  <script>
+    // ThingSpeak API URL (Replace with your own ThingSpeak channel)
+    const apiUrl = "https://api.thingspeak.com/channels/YOUR_CHANNEL_ID/feeds.json?api_key=YOUR_READ_API_KEY&results=10";
+
+    async function fetchData() {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      const feeds = data.feeds;
+
+      const temperatures = feeds.map(feed => parseFloat(feed.field1));
+      const humidity = feeds.map(feed => parseFloat(feed.field2));
+      const timestamps = feeds.map(feed => feed.created_at);
+
+      updateCharts(temperatures, humidity, timestamps);
+    }
+
+    function updateCharts(temperatures, humidity, timestamps) {
+      const ctxTemp = document.getElementById('temperatureChart').getContext('2d');
+      const ctxHumidity = document.getElementById('humidityChart').getContext('2d');
+
+      new Chart(ctxTemp, {
+        type: 'line',
+        data: {
+          labels: timestamps,
+          datasets: [{
+            label: 'Temperature (°C)',
+            data: temperatures,
+            borderColor: 'rgba(255, 99, 132, 1)',
+            fill: false,
+          }],
+        },
+      });
+
+      new Chart(ctxHumidity, {
+        type: 'line',
+        data: {
+          labels: timestamps,
+          datasets: [{
+            label: 'Humidity (%)',
+            data: humidity,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            fill: false,
+          }],
+        },
+      });
+    }
+
+    fetchData(); // Load data when the page loads
+  </script>
+</body>
+</html>
